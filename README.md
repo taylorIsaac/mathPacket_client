@@ -7,8 +7,8 @@ Purposes:
 - Understand the importance of TCP socket programming.
 
 Context:
-- Client requests are built and sent to a server. Final result is received (See Reference #1).
-- Client program takes from the command line a chain of operators and operands (See Reference #2).
+- Client requests are built and sent to a server (See Reference #1).
+- Client program takes from the command line a chain of operators and operands. Final result is received (See Reference #2).
 
 Important references:
 ===========================================================================
