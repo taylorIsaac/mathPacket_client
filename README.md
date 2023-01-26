@@ -1,6 +1,9 @@
 # mathPacket_client
 Short code sample: socket programming in C.
 
+Purpose:
+- To demonstrate a TCP Client-Server model implementation.
+
 Important references:
 ===========================================================================
 
