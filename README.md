@@ -6,7 +6,7 @@ Important references:
 
 1. Client Request format:
 
-Command MATH/Version\n
+Command MATH/Version
 [Operand1 : X\n]
 Operator: Y\n
 Operand2: Z\n
