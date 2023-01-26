@@ -22,6 +22,7 @@
     snprintf (szSendOffBuffer, BUFFER_SIZE,
               "%s MATH/1.1\nOperand1: %s\nOperator: %s\nOperand2: %s%s", 
               CMD, argv[3], argv[4], argv[5], "\nConnection: Close\n\n");
+    /* DASH_D is an optional, last command line argument to display packet */
     printPacket(szSendOffBuffer, argv[argc - INDEX_CORRECTER], DASH_D);
   }
 
