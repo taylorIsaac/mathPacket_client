@@ -43,7 +43,7 @@
   socketfd = socket (AF_INET, SOCK_STREAM, 0);
   validateMySock (socketfd, "No socket!\n"); 
 
-	result = connect (socketfd, (struct sockaddr_in *) &serverAddress, 
+  result = connect (socketfd, (struct sockaddr_in *) &serverAddress, 
                     sizeof (struct sockaddr_in));
   validateMySock (result, "Connection error!\n");
 
