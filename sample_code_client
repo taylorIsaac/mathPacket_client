@@ -1,0 +1,96 @@
+  struct sockaddr_in serverAddress;
+  int result;
+  int socketfd;
+  bool bIsFirstPacket = true;
+  bool bMultiplePackets = false; 
+  bool bPrintPacket = false;
+  bool bIsFinalPacket = false;
+  const int BUFFER_SIZE = 1024;
+  const char CMD[] = "CALCULATE";
+  const char CMD_CONT[] = "CONTINUE";
+  const int SEVENTH_ARG = 7;
+  const char DASH_D[] = "-d";
+  const int INDEX_CORRECTER = 1;
+  char szSendOffBuffer[BUFFER_SIZE];
+  char szSendAndRecvBuffer[BUFFER_SIZE];
+  char szConcatenatingBuffer[BUFFER_SIZE];
+  
+  memset (szSendOffBuffer, '\0', BUFFER_SIZE); 
+  /* client request format for single packet */
+  if (SEVENTH_ARG >= argc)
+  { 
+    snprintf (szSendOffBuffer, BUFFER_SIZE,
+              "%s MATH/1.1\nOperand1: %s\nOperator: %s\nOperand2: %s%s", 
+              CMD, argv[3], argv[4], argv[5], "\nConnection: Close\n\n");
+    printPacket(szSendOffBuffer, argv[argc - INDEX_CORRECTER], DASH_D);
+  }
+
+  /* client request format for multiple packets */
+  else
+  { 
+    bMultiplePackets = true;
+    snprintf (szSendOffBuffer, BUFFER_SIZE,
+              "%s MATH/1.1\nOperand1: %s\nOperator: %s\nOperand2: %s%s", 
+              CMD, argv[3], argv[4], argv[5],"\nConnection: Keep-Alive\n\n");
+    printPacket(szSendOffBuffer, argv[argc - INDEX_CORRECTER], DASH_D);
+  }
+
+  serverAddress.sin_family = AF_INET; 
+  serverAddress.sin_port = htons (atoi(argv[2]));
+  result = inet_pton (AF_INET, argv[1], &serverAddress.sin_addr);  
+
+  socketfd = socket (AF_INET, SOCK_STREAM, 0);
+  validateMySock (socketfd, "No socket!\n"); 
+
+	result = connect (socketfd, (struct sockaddr_in *) &serverAddress, 
+                    sizeof (struct sockaddr_in));
+  validateMySock (result, "Connection error!\n");
+
+  result = send (socketfd, szSendOffBuffer, (strlen (szSendOffBuffer)), 0);
+  validateMySock (result, "No send!\n");
+
+  memset (szConcatenatingBuffer, '\0', BUFFER_SIZE);
+  /* delimiter "\n\n" signifies end of a packet */
+  while (!strstr (szConcatenatingBuffer, "\n\n")) 
+  { 
+    memset (szSendOffBuffer, '\0', BUFFER_SIZE); 
+    recv (socketfd, szSendOffBuffer, BUFFER_SIZE, 0);
+    strcat (szConcatenatingBuffer, szSendOffBuffer); 
+  }
+
+  printPacket(szConcatenatingBuffer, argv[argc - INDEX_CORRECTER], DASH_D);
+  
+  if (!strcmp(DASH_D, argv[argc-1])) 
+  {
+    argc--;
+    bPrintPacket = true;
+  }
+
+  if (bMultiplePackets)
+  {
+    bIsFirstPacket = false;
+    for (int argCount = 6; argCount < argc; argCount+=2)
+    {
+      memset (szSendAndRecvBuffer, '\0', BUFFER_SIZE);
+      if (argCount == argc - 2) 
+      {
+        bIsFinalPacket = true;
+        snprintf (szSendAndRecvBuffer, BUFFER_SIZE,
+                  "%s MATH/1.1\nOperator: %s\nOperand2: %s%s", 
+                  CMD_CONT, argv[argCount], argv[argCount+1],
+                  "\nConnection: Close\n\n");
+      }
+      else 
+      {
+         snprintf (szSendAndRecvBuffer, BUFFER_SIZE,
+                   "%s MATH/1.1\nOperator: %s\nOperand2: %s%s", 
+                   CMD_CONT, argv[argCount], argv[argCount+1], 
+                   "\nConnection: Keep-Alive\n\n");
+      }
+      result = send (socketfd, szSendAndRecvBuffer, (strlen (szSendAndRecvBuffer)), 0);
+      validateMySock (result, "No send!\n");
+
+      if (bPrintPacket) 
+      { 
+        printf ("%s", szSendAndRecvBuffer);
+      }
